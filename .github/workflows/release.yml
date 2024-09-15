@@ -1,0 +1,85 @@
+name: Release
+
+permissions:
+  contents: write
+
+on:
+  release:
+    types:
+      - "published"
+  workflow_dispatch:
+
+jobs:
+  unix:
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: ubuntu-20.04
+            target: x86_64-unknown-linux-gnu
+          - runner: ubuntu-20.04
+            target: aarch64-unknown-linux-gnu
+          - runner: macos-12
+            target: aarch64-apple-darwin
+          - runner: macos-12
+            target: x86_64-apple-darwin
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - uses: r7kamura/rust-problem-matchers@v1.1.0
+      - name: "Add toolchains"
+        run: rustup target add ${{ matrix.platform.target }}
+      - name: "Build"
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --release --target  ${{ matrix.platform.target }} -p zz
+      - name: "Archive"
+        run: zip  -j -r ${{ matrix.platform.target }}.zip target/${{ matrix.platform.target }}/release/zz
+
+      - name: "Upload asset"
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ matrix.platform.target }}.zip
+          asset_name: zz-${{ github.ref_name }}-${{ matrix.platform.target }}.zip
+          asset_content_type: application/zip
+
+  windows-release:
+    name: "Windows Release"
+
+    strategy:
+      matrix:
+        platform:
+          - runner: windows-2022
+            target: x86_64-pc-windows-msvc
+
+      fail-fast: false
+    runs-on: ${{ matrix.platform.runner }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: r7kamura/rust-problem-matchers@v1.1.0
+
+      - name: "Build binaries"
+        timeout-minutes: 60
+        run: "cargo build --release -p zz"
+
+      - name: Create Archive (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: Compress-Archive -Path target/release/zz.exe -DestinationPath archive.zip
+
+      - name: "Upload release asset"
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: archive.zip
+          asset_name: zz-${{ github.ref_name }}-${{ matrix.platform.target }}.zip
+          asset_content_type: application/zip
