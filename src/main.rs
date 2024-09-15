@@ -1,7 +1,9 @@
 mod indygreg;
 mod install;
+mod venv;
 
 use clap::{Parser, Subcommand};
+use eyre::bail;
 
 #[derive(Parser)]
 #[command(
@@ -19,6 +21,9 @@ enum Commands {
     Venv {
         #[arg(short, long)]
         version: String,
+
+        #[arg(short, long)]
+        name: Option<String>,
     },
     Install {
         #[arg(short, long)]
@@ -31,27 +36,33 @@ async fn main() -> eyre::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Some(Commands::Venv { version }) => {}
-        Some(Commands::Install { version }) => {}
-        None => {
-            println!("Aucune sous-commande fournie, exécution sans options...");
+        Some(Commands::Venv { version, name }) => {
+            use std::env;
+
+            let python = match env::consts::OS {
+                "macos" => format!(".zz/python-{}/bin/python3", version),
+                "windows" => format!(".zz/python-{}/python", version),
+                "linux" => format!(".zz/python-{}/bin/python3", version),
+                _ => bail!("Unsupported OS"),
+            };
+
+            let name = name.unwrap_or(".venv".to_string());
+
+            venv::make(python.as_str(), name.as_str()).await?;
+        }
+        Some(Commands::Install { version }) => {
             let target = indygreg::target::get_target()?;
             let assets = indygreg::cpython::get_release(target).await?;
 
-            for asset in &assets {
-                println!("Version {} available at {}", asset.0, asset.1.name);
-            }
-
-            let version = "3.10";
-
-            indygreg::download::download(assets, version, ".zz/temp").await?;
-            install::targz::decompress_and_extract(
+            indygreg::download::download(assets, version.as_str(), ".zz/temp").await?;
+            install::decompress_and_extract(
                 ".zz/temp/python.tar.gz",
                 format!(".zz/python-{}", version).as_str(),
             )
             .await?;
         }
-    }
+        None => {}
+    };
 
     Ok(())
 }
