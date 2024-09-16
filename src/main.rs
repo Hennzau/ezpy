@@ -14,9 +14,8 @@ struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
 
-    // To capture the file or cases without a subcommand
     #[arg()]
-    file: Option<String>,
+    args: Option<Vec<String>>,
 }
 
 #[derive(Subcommand)]
@@ -50,12 +49,22 @@ async fn main() -> Result<()> {
 
     if cli.command.is_none() {
         // If a file is passed without a subcommand
-        if let Some(file) = cli.file {
+        if let Some(args) = cli.args {
+            let file = args.first().unwrap();
+            let args = args.iter().skip(1).collect::<Vec<_>>();
+
             let uv = uv::Uv::new(&zz_home);
             let path = uv.path_bin(&python_version).await?;
 
             let mut cmd = tokio::process::Command::new(path);
-            let status = cmd.arg(file).status().await?;
+            cmd.arg(file);
+
+            for arg in args {
+                cmd.arg(arg);
+            }
+
+            let status = cmd.status().await?;
+
             if !status.success() {
                 println!("Failed to run the python file, see the error above.");
             }
