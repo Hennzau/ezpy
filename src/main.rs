@@ -1,68 +1,87 @@
-mod indygreg;
-mod install;
-mod venv;
+mod target;
+mod uv;
 
 use clap::{Parser, Subcommand};
-use eyre::bail;
+use eyre::Result; // Using eyre for error handling
 
 #[derive(Parser)]
+#[command(name = "zz")]
 #[command(
-    name = "ZZ",
-    version = "0.0.1",
-    about = "ZZ is a tool to manage Python installations and environnements."
+    about = "Manage the latest Python: perfect for educative purpose",
+    version = "0.0.1"
 )]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
+
+    // To capture the file or cases without a subcommand
+    #[arg()]
+    file: Option<String>,
 }
 
 #[derive(Subcommand)]
 enum Commands {
-    Venv {
-        #[arg(short, long)]
-        version: String,
-
-        #[arg(short, long)]
-        name: Option<String>,
-    },
+    /// Initializes the application
+    Init,
+    /// Installs something
     Install {
-        #[arg(short, long)]
-        version: String,
+        #[arg()]
+        package: String, // [string] like a package name
     },
+    /// Creates a virtual environment
+    Venv, // "venv"
+    /// Copies a file or an item
+    Copy, // "copy"
+    Clean, // "clean"
 }
 
-#[tokio::main]
-async fn main() -> eyre::Result<()> {
+#[tokio::main] // Using tokio for the main function
+async fn main() -> Result<()> {
+    // Returns a Result for error handling with eyre
     let cli = Cli::parse();
 
-    match cli.command {
-        Some(Commands::Venv { version, name }) => {
-            use std::env;
-
-            let python = match env::consts::OS {
-                "macos" => format!(".zz/python-{}/bin/python3", version),
-                "windows" => format!(".zz/python-{}/python", version),
-                "linux" => format!(".zz/python-{}/bin/python3", version),
-                _ => bail!("Unsupported OS"),
-            };
-
-            let name = name.unwrap_or(".venv".to_string());
-
-            venv::make(python.as_str(), name.as_str()).await?;
+    if cli.command.is_none() {
+        // If a file is passed without a subcommand
+        if let Some(file) = cli.file {
+            println!("File provided: {}", file);
+        } else {
+            println!("No file provided.");
         }
-        Some(Commands::Install { version }) => {
-            let target = indygreg::target::get_target()?;
-            let assets = indygreg::cpython::get_release(target).await?;
+    }
 
-            indygreg::download::download(assets, version.as_str(), ".zz/temp").await?;
-            install::decompress_and_extract(
-                ".zz/temp/python.tar.gz",
-                format!(".zz/python-{}", version).as_str(),
-            )
-            .await?;
+    let python_version = "3.12.6".to_string();
+
+    // If a subcommand is specified
+    if let Some(command) = cli.command {
+        match command {
+            Commands::Init => {
+                let mut uv = uv::Uv::new(".zz");
+                uv.install().await?;
+
+                uv.install_python(Some(python_version)).await?;
+            }
+            Commands::Clean => {
+                let uv = uv::Uv::new(".zz");
+
+                uv.uninstall_python(python_version).await?;
+            }
+            Commands::Install { package } => {
+                let uv = uv::Uv::new(".zz");
+
+                uv.pip_install(package).await?;
+            }
+            Commands::Venv => {
+                let uv = uv::Uv::new(".zz");
+
+                uv.venv(python_version).await?;
+            }
+            Commands::Copy => {
+                let uv = uv::Uv::new(".zz");
+
+                println!("{:?}", uv.path_bin(python_version).await?);
+            }
         }
-        None => {}
-    };
+    }
 
     Ok(())
 }
