@@ -31,7 +31,7 @@ enum Commands {
     /// Creates a virtual environment
     Venv, // "venv"
     /// Copies a file or an item
-    Copy, // "copy"
+    Dir, // "copy"
     Clean, // "clean"
 }
 
@@ -40,45 +40,65 @@ async fn main() -> Result<()> {
     // Returns a Result for error handling with eyre
     let cli = Cli::parse();
 
+    let python_version = "3.12.6".to_string();
+    let zz_home = simple_home_dir::home_dir()
+        .unwrap()
+        .join(".zz")
+        .to_str()
+        .unwrap()
+        .to_string();
+
     if cli.command.is_none() {
         // If a file is passed without a subcommand
         if let Some(file) = cli.file {
-            println!("File provided: {}", file);
-        } else {
-            println!("No file provided.");
-        }
-    }
+            let uv = uv::Uv::new(&zz_home);
+            let path = uv.path_bin(&python_version).await?;
 
-    let python_version = "3.12.6".to_string();
+            let mut cmd = tokio::process::Command::new(path);
+            let status = cmd.arg(file).status().await?;
+            if !status.success() {
+                println!("Failed to run the python file, see the error above.");
+            }
+        } else {
+            println!(
+                "No file provided. If you want to run a Python file, please provide a file name."
+            );
+        }
+
+        return Ok(());
+    }
 
     // If a subcommand is specified
     if let Some(command) = cli.command {
         match command {
             Commands::Init => {
-                let mut uv = uv::Uv::new(".zz");
+                let mut uv = uv::Uv::new(&zz_home);
                 uv.install().await?;
 
                 uv.install_python(Some(python_version)).await?;
             }
             Commands::Clean => {
-                let uv = uv::Uv::new(".zz");
+                let uv = uv::Uv::new(&zz_home);
 
                 uv.uninstall_python(python_version).await?;
             }
             Commands::Install { package } => {
-                let uv = uv::Uv::new(".zz");
+                let uv = uv::Uv::new(&zz_home);
 
+                uv.venv(python_version).await?;
                 uv.pip_install(package).await?;
             }
             Commands::Venv => {
-                let uv = uv::Uv::new(".zz");
+                let uv = uv::Uv::new(&zz_home);
 
                 uv.venv(python_version).await?;
             }
-            Commands::Copy => {
-                let uv = uv::Uv::new(".zz");
+            Commands::Dir => {
+                let uv = uv::Uv::new(&zz_home);
 
-                println!("{:?}", uv.path_bin(python_version).await?);
+                let path = uv.path_bin(&python_version).await?;
+                let path_string = path.to_str().unwrap().to_string();
+                println!("{}", path_string);
             }
         }
     }

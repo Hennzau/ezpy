@@ -23,3 +23,8 @@ Cargo.lock
 # Added by cargo
 
 /target
+
+.zz
+.venv
+main.py
+pyrightconfig.json

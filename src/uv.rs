@@ -26,6 +26,22 @@ impl Uv {
         }
     }
 
+    async fn search_venv(&self) -> eyre::Result<PathBuf> {
+        let mut path = std::env::current_dir()?;
+        loop {
+            let venv = path.join(".venv");
+            if venv.exists() {
+                return Ok(venv);
+            }
+
+            if !path.pop() {
+                break;
+            }
+        }
+
+        Err(eyre::eyre!("No venv found."))
+    }
+
     pub async fn install(&mut self) -> eyre::Result<()> {
         if !self.installed {
             install::download_and_install(&self.home).await?;
@@ -70,10 +86,14 @@ impl Uv {
     }
 
     pub async fn venv(&self, version: String) -> eyre::Result<()> {
-        let mut cmd = tokio::process::Command::new(&self.bin);
-        cmd.arg("venv").arg("--python").arg(version);
+        let venv = self.search_venv().await;
 
-        self.execute(cmd).await?;
+        if let Err(_) = venv {
+            let mut cmd = tokio::process::Command::new(&self.bin);
+            cmd.arg("venv").arg("--python").arg(version);
+
+            self.execute(cmd).await?;
+        }
 
         Ok(())
     }
@@ -87,21 +107,19 @@ impl Uv {
         Ok(())
     }
 
-    pub async fn path_bin(&self, version: String) -> eyre::Result<PathBuf> {
+    pub async fn path_bin(&self, version: &str) -> eyre::Result<PathBuf> {
         if !self.installed {
             return Err(eyre::eyre!("uv is not installed."));
         }
 
-        let current_dir = std::env::current_dir()?;
+        let venv = self.search_venv().await;
 
-        // check if a folder ".venv" exists in the current directory
-        let venv = std::path::Path::new(".venv");
-        if venv.exists() {
+        if let Ok(venv) = venv {
             #[cfg(target_os = "windows")]
-            return Ok(current_dir.join(venv.join("Scripts").join("python.exe")));
+            return Ok(venv.join("Scripts").join("python.exe"));
 
             #[cfg(not(target_os = "windows"))]
-            return Ok(current_dir.join(venv.join("bin").join("python3")));
+            return Ok(venv.join("bin").join("python3"));
         }
 
         let mut cmd = tokio::process::Command::new(&self.bin);
