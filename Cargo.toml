@@ -37,6 +37,6 @@ targets = [
     "x86_64-pc-windows-msvc",
 ]
 # Path that installers should place binaries in
-install-path = "~/.zz/bin"
+install-path = "CARGO_HOME"
 # Whether to install an updater program
 install-updater = false
