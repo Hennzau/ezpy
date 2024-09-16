@@ -1,9 +1,17 @@
-# zz
+# zz - Simplify Python Installations 🐍
 
-`zz` permet de s'affranchir des difficultés rencontrés avec des étudiants lors des installations python (multiple installations, conflits entre des paquets...)
+`zz` helps solve the common issues faced by students during Python installations, such as multiple installations and package conflicts.
 
-Avec `zz`, une seule version python est installée à un endroit précis de la machine, pour pouvoir y accéder sans modifier les variables d'environnements de l'utilisateur.
+With `zz`, a single version of Python is installed in a specific location on the machine, allowing access without modifying the user’s environment variables.
 
-Vous pouvez donc lancer un script python en utilisant la commande `zz` suivie du nom du script python (avec de potentiels arguments).
-Mais si vous décidez d'installer des packages supplémentaires vous devez le faire avec la commande `zz install`, cela crééra automatiquemenet un venv, le liera au Code Editor ouvert.
-Vous pouvez aussi utiliser `zz dir` qui vous donnera le path vers l'éxécutable python à utiliser (pratique pour le set manuellement dans VSCode).
+## Running a Python Script 📜
+
+You can run a Python script by using the `zz` command followed by the script's name (and any potential arguments). This makes it easy and efficient to use Python without hassle.
+
+## Installing Additional Packages 📦
+
+If you need to install additional packages, use the `zz install` command. This will automatically create a virtual environment (venv) and link it to the code editor you have open.
+
+## Getting the Path to the Python Executable 🛠️
+
+You can also use the `zz dir` command to get the path to the Python executable. This is particularly useful if you need to manually set the path in an editor like VSCode.
