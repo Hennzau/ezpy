@@ -1,0 +1,18 @@
+[workspace]
+members = ["binaries/zz", "libraries/uv", "libraries/script"]
+resolver = "2"
+
+[workspace.package]
+version = "0.0.1"
+description = ""
+edition = "2021"
+documentation = ""
+license = "Apache-2.0"
+repository = "https://github.com/Hennzau/zz"
+
+[workspace.dependencies]
+uv = { path = "libraries/uv" }
+script = { path = "libraries/script" }
+
+eyre = "0.6.12"
+tokio = { version = "1.40.0", features = ["full"] }

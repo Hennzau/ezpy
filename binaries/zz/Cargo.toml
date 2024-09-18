@@ -1,0 +1,13 @@
+[package]
+name = "zz"
+version.workspace = true
+edition.workspace = true
+documentation.workspace = true
+description.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+uv = { workspace = true }
+script = { workspace = true }
+ratatui = "0.28.1"
