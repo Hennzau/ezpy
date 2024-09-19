@@ -24,30 +24,25 @@ fn main() -> eyre::Result<()> {
     app_result
 }
 
-#[derive(Default)]
 struct App {
     state: AppState,
     selected_tab: SelectedTab,
 }
 
-#[derive(Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 enum RunningState {
-    #[default]
     Main,
     InTab,
 }
 
-#[derive(Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 enum AppState {
     Running(RunningState),
-
-    #[default]
     Quitting,
 }
 
-#[derive(Default, Clone, Copy, Display, FromRepr, EnumIter)]
+#[derive(Clone, Copy, Display, FromRepr, EnumIter)]
 enum SelectedTab {
-    #[default]
     #[strum(to_string = "Python")]
     PythonTab,
     #[strum(to_string = "Rust")]
@@ -76,7 +71,7 @@ impl App {
                 match key.code {
                     KeyCode::Right => self.next_tab(),
                     KeyCode::Left => self.previous_tab(),
-                    KeyCode::Char('q') | KeyCode::Esc => self.quit(),
+                    KeyCode::Esc => self.quit(),
                     _ => {}
                 }
             }
@@ -152,7 +147,7 @@ fn render_title(area: Rect, buf: &mut Buffer) {
 }
 
 fn render_footer(area: Rect, buf: &mut Buffer) {
-    Line::raw("◄ ► to change tab | Press q to quit")
+    Line::raw("< >  to change tab | Press ESC to quit")
         .centered()
         .render(area, buf);
 }
