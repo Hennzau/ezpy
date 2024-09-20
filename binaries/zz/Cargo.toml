@@ -13,5 +13,3 @@ script = { workspace = true }
 eyre = { workspace = true }
 tokio = { workspace = true }
 ratatui = "0.28.1"
-crossterm = "0.28.1"
-strum = "0.26.3"
