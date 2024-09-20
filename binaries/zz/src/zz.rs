@@ -22,41 +22,41 @@ pub enum AppState {
 pub enum SelectedTab {
     Python(python::PythonTab),
     Rust(rust::RustTab),
-    CXX(cxx::CXXTab),
+    Cxx(cxx::CXXTab),
     Zed(zed::ZedTab),
 }
 
 impl SelectedTab {
-    pub fn new_python() -> Self {
-        Self::Python(python::PythonTab::new())
+    pub fn new_python() -> eyre::Result<Self> {
+        Ok(Self::Python(python::PythonTab::new()?))
     }
 
-    pub fn new_rust() -> Self {
-        Self::Rust(rust::RustTab::new())
+    pub fn new_rust() -> eyre::Result<Self> {
+        Ok(Self::Rust(rust::RustTab::new()?))
     }
 
-    pub fn new_cxx() -> Self {
-        Self::CXX(cxx::CXXTab::new())
+    pub fn new_cxx() -> eyre::Result<Self> {
+        Ok(Self::Cxx(cxx::CXXTab::new()?))
     }
 
-    pub fn new_zed() -> Self {
-        Self::Zed(zed::ZedTab::new())
+    pub fn new_zed() -> eyre::Result<Self> {
+        Ok(Self::Zed(zed::ZedTab::new()?))
     }
 
     fn palette(&self) -> tailwind::Palette {
         match self {
             SelectedTab::Python(_) => tailwind::GRAY,
             SelectedTab::Rust(_) => tailwind::RED,
-            SelectedTab::CXX(_) => tailwind::RED,
+            SelectedTab::Cxx(_) => tailwind::RED,
             SelectedTab::Zed(_) => tailwind::RED,
         }
     }
 
-    fn handle_events(&mut self, event: Event) -> (AppState, Option<Self>) {
+    fn handle_events(&mut self, event: Event) -> eyre::Result<(AppState, Option<Self>)> {
         match self {
             SelectedTab::Python(tab) => tab.handle_events(event),
             SelectedTab::Rust(tab) => tab.handle_events(event),
-            SelectedTab::CXX(tab) => tab.handle_events(event),
+            SelectedTab::Cxx(tab) => tab.handle_events(event),
             SelectedTab::Zed(tab) => tab.handle_events(event),
         }
     }
@@ -67,7 +67,7 @@ impl Widget for &SelectedTab {
         match self {
             SelectedTab::Python(tab) => tab.render(area, buf),
             SelectedTab::Rust(tab) => tab.render(area, buf),
-            SelectedTab::CXX(tab) => tab.render(area, buf),
+            SelectedTab::Cxx(tab) => tab.render(area, buf),
             SelectedTab::Zed(tab) => tab.render(area, buf),
         }
     }
@@ -92,7 +92,8 @@ impl App {
     fn handle_events(&mut self) -> eyre::Result<()> {
         let event = event::read()?;
 
-        let (state, tab): (AppState, Option<SelectedTab>) = self.selected_tab.handle_events(event);
+        let (state, tab): (AppState, Option<SelectedTab>) =
+            self.selected_tab.handle_events(event)?;
 
         if let Some(tab) = tab {
             self.selected_tab = tab;
@@ -131,7 +132,7 @@ impl Widget for &App {
         let selected_tab_index = match self.selected_tab {
             SelectedTab::Python(_) => 0,
             SelectedTab::Rust(_) => 1,
-            SelectedTab::CXX(_) => 2,
+            SelectedTab::Cxx(_) => 2,
             SelectedTab::Zed(_) => 3,
         };
 

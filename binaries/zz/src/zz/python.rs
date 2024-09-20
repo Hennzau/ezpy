@@ -1,18 +1,17 @@
 use ratatui::{
     buffer::Buffer,
-    crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind},
-    layout::{Constraint, Layout, Rect},
-    style::{
-        palette::tailwind::{self, GRAY},
-        Color, Stylize,
-    },
+    crossterm::event::{Event, KeyCode},
+    layout::Rect,
+    style::palette::tailwind::GRAY,
     symbols,
-    text::Line,
-    widgets::{Block, Padding, Paragraph, Tabs, Widget},
-    DefaultTerminal,
+    widgets::{Block, Padding, Paragraph, Widget},
 };
 
-pub struct PythonTab {}
+use uv::UV;
+
+pub struct PythonTab {
+    uv: UV,
+}
 
 impl Widget for &PythonTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
@@ -28,24 +27,27 @@ impl Widget for &PythonTab {
 }
 
 impl PythonTab {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new() -> eyre::Result<Self> {
+        Ok(Self { uv: UV::new()? })
     }
 
-    pub fn handle_events(&mut self, event: Event) -> (super::AppState, Option<super::SelectedTab>) {
+    pub fn handle_events(
+        &mut self,
+        event: Event,
+    ) -> eyre::Result<(super::AppState, Option<super::SelectedTab>)> {
         if let Event::Key(key) = event {
             match key.code {
-                KeyCode::Esc => return (super::AppState::Quitting, None),
+                KeyCode::Esc => return Ok((super::AppState::Quitting, None)),
                 KeyCode::Right => {
-                    return (
+                    return Ok((
                         super::AppState::Running,
-                        Some(super::SelectedTab::new_rust()),
-                    )
+                        Some(super::SelectedTab::new_rust()?),
+                    ))
                 }
                 _ => {}
             }
         }
 
-        (super::AppState::Running, None)
+        Ok((super::AppState::Running, None))
     }
 }
