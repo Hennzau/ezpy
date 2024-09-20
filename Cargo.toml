@@ -1,5 +1,5 @@
 [workspace]
-members = ["binaries/zz", "libraries/uv", "libraries/script"]
+members = ["binaries/zz", "libraries/uv", "libraries/script", "binaries/zython"]
 resolver = "2"
 
 [workspace.package]

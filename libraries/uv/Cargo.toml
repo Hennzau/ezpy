@@ -8,3 +8,7 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+simple-home-dir = "0.4.2"
+eyre = { workspace = true }
+tokio = { workspace = true }
+script = { workspace = true }
