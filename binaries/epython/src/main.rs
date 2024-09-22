@@ -140,7 +140,9 @@ async fn main() -> Result<()> {
             eyre::bail!("Python command failed");
         }
     } else {
-        eyre::bail!("No command specified");
+        // Show help
+
+        Cli::parse_from(&["epython", "--help"]);
     }
 
     Ok(())
