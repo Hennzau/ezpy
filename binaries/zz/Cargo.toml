@@ -13,3 +13,4 @@ script = { workspace = true }
 eyre = { workspace = true }
 tokio = { workspace = true }
 ratatui = "0.28.1"
+simple-home-dir = "0.4.2"

@@ -5,7 +5,8 @@ async fn fetch_script_curl(url: &str) -> eyre::Result<String> {
     let curl_output = tokio::process::Command::new("curl")
         .arg("-LsSf")
         .arg(url)
-        .stdout(Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
         .spawn()?
         .wait_with_output()
         .await?;
@@ -23,7 +24,8 @@ async fn fetch_script_powershell(url: &str) -> eyre::Result<String> {
     let curl_output = tokio::process::Command::new("powershell")
         .arg("-c")
         .arg(format!("irm {}", url))
-        .stdout(Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
         .spawn()?
         .wait_with_output()
         .await?;
@@ -48,12 +50,11 @@ pub async fn fetch_script(url: &str) -> eyre::Result<String> {
 
 async fn execute_script_sh(script: String) -> eyre::Result<()> {
     let mut sh_process = tokio::process::Command::new("sh")
-        .stdin(Stdio::piped())
+        .arg("-c")
+        .arg(script)
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
         .spawn()?;
-
-    if let Some(mut stdin) = sh_process.stdin.take() {
-        stdin.write_all(script.as_bytes()).await?;
-    }
 
     let sh_status = sh_process.wait().await?;
 
@@ -67,12 +68,10 @@ async fn execute_script_sh(script: String) -> eyre::Result<()> {
 async fn execute_script_powershell(script: String) -> eyre::Result<()> {
     let mut powershell_process = tokio::process::Command::new("powershell")
         .arg("-c")
-        .stdin(Stdio::piped())
+        .arg(script)
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
         .spawn()?;
-
-    if let Some(mut stdin) = powershell_process.stdin.take() {
-        stdin.write_all(script.as_bytes()).await?;
-    }
 
     let powershell_status = powershell_process.wait().await?;
 

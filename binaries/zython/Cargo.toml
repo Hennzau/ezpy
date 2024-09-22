@@ -11,3 +11,4 @@ repository.workspace = true
 uv = { workspace = true }
 eyre = { workspace = true }
 tokio = { workspace = true }
+script = { workspace = true }

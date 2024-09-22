@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use ratatui::{
     buffer::Buffer,
     crossterm::event::{self, Event},
@@ -60,10 +62,7 @@ impl SelectedTab {
             SelectedTab::Zed(tab) => tab.handle_events(event),
         }
     }
-}
-
-impl Widget for &SelectedTab {
-    fn render(self, area: Rect, buf: &mut Buffer) {
+    pub fn render(&mut self, area: Rect, buf: &mut Buffer) -> eyre::Result<()> {
         match self {
             SelectedTab::Python(tab) => tab.render(area, buf),
             SelectedTab::Rust(tab) => tab.render(area, buf),
@@ -81,7 +80,7 @@ pub struct App {
 impl App {
     pub fn run(mut self, mut terminal: DefaultTerminal) -> eyre::Result<()> {
         while self.state == AppState::Running {
-            terminal.draw(|frame| frame.render_widget(&self, frame.area()))?;
+            terminal.draw(|frame| frame.render_widget(&mut self, frame.area()))?;
 
             self.handle_events()?;
         }
@@ -90,22 +89,24 @@ impl App {
     }
 
     fn handle_events(&mut self) -> eyre::Result<()> {
-        let event = event::read()?;
+        if ratatui::crossterm::event::poll(Duration::from_millis(100))? {
+            let event = event::read()?;
 
-        let (state, tab): (AppState, Option<SelectedTab>) =
-            self.selected_tab.handle_events(event)?;
+            let (state, tab): (AppState, Option<SelectedTab>) =
+                self.selected_tab.handle_events(event)?;
 
-        if let Some(tab) = tab {
-            self.selected_tab = tab;
+            if let Some(tab) = tab {
+                self.selected_tab = tab;
+            }
+
+            self.state = state;
         }
-
-        self.state = state;
 
         Ok(())
     }
 }
 
-impl Widget for &App {
+impl Widget for &mut App {
     fn render(self, area: Rect, buf: &mut Buffer) {
         use Constraint::{Length, Min};
         let vertical = Layout::vertical([Length(1), Min(0), Length(1)]);
@@ -145,7 +146,12 @@ impl Widget for &App {
 
         /* render content */
 
-        self.selected_tab.render(inner_area, buf);
+        if let Err(e) = self.selected_tab.render(inner_area, buf) {
+            Line::raw(format!("Error: {}", e))
+                .fg(tailwind::RED.c700)
+                .centered()
+                .render(inner_area, buf);
+        }
 
         /* footer */
 

@@ -9,19 +9,6 @@ use ratatui::{
 
 pub struct CXXTab {}
 
-impl Widget for &CXXTab {
-    fn render(self, area: Rect, buf: &mut Buffer) {
-        Paragraph::new("Not available yet.")
-            .block(
-                Block::bordered()
-                    .border_set(symbols::border::PROPORTIONAL_TALL)
-                    .padding(Padding::horizontal(1))
-                    .border_style(RED.c700),
-            )
-            .render(area, buf);
-    }
-}
-
 impl CXXTab {
     pub fn new() -> eyre::Result<Self> {
         Ok(Self {})
@@ -51,5 +38,18 @@ impl CXXTab {
         }
 
         Ok((super::AppState::Running, None))
+    }
+
+    pub fn render(&mut self, area: Rect, buf: &mut Buffer) -> eyre::Result<()> {
+        Paragraph::new("Not available yet.")
+            .block(
+                Block::bordered()
+                    .border_set(symbols::border::PROPORTIONAL_TALL)
+                    .padding(Padding::horizontal(1))
+                    .border_style(RED.c700),
+            )
+            .render(area, buf);
+
+        Ok(())
     }
 }
