@@ -1,9 +1,15 @@
 [workspace]
-members = ["binaries/zz", "libraries/uv", "libraries/script", "binaries/zython"]
+members = [
+    "binaries/zz",
+    "libraries/uv",
+    "libraries/script",
+    "binaries/zython",
+    "binaries/epython",
+]
 resolver = "2"
 
 [workspace.package]
-version = "0.0.2"
+version = "0.1.0"
 description = ""
 edition = "2021"
 documentation = ""
@@ -17,6 +23,7 @@ script = { path = "libraries/script" }
 eyre = "0.6.12"
 color-eyre = "0.6.3"
 tokio = { version = "1.40.0", features = ["full"] }
+clap = { version = "4.5.13", features = ["derive"] }
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]
