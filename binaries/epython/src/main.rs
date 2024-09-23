@@ -137,7 +137,7 @@ async fn main() -> Result<()> {
             .await?;
 
         if !status.success() {
-            eyre::bail!("Python command failed");
+            eyre::bail!("Python command failed, ahahaha");
         }
     } else {
         // Show help
