@@ -1,7 +1,7 @@
 # CSPython
 
 `cspython` est un outil **alias** ou **mirror** de python qui vise à être utilisé pour ne pas compromettre les variables path de l'utilisateur
-simplement comme un alial de Python. C'est à dire que toutes les commandes du type:
+simplement à la place de Python. C'est à dire que toutes les commandes du type:
 
 ```bash
 python [args...]
