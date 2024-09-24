@@ -8,7 +8,7 @@ use uv::python::PythonVersion;
 #[command(
     author = "Enzo Le Van <dev@enzo-le-van.fr>",
     version = env!("CARGO_PKG_VERSION"),
-    about = "Python 3.12.6 easy manager"
+    about = "Python 3.12.6 mirror espcecially for CS students"
 )]
 struct Cli {
     #[arg()]
@@ -21,16 +21,6 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Init,
-    Install {
-        package: Option<String>,
-
-        #[arg(short, long, value_name = "FILE")]
-        requirement: Option<String>,
-
-        #[arg(short = 'e', long = "editable")]
-        editable: bool,
-    },
-
     Dir,
 }
 
@@ -80,44 +70,6 @@ async fn main() -> Result<()> {
 
                 println!("UV installed and Python 3.12.6 installed.");
             }
-            Commands::Install {
-                package,
-                requirement,
-                editable,
-            } => {
-                let mut path = std::env::current_dir()?;
-
-                let venv = loop {
-                    let venv = path.join(".venv");
-                    if venv.exists() {
-                        break Some(venv);
-                    }
-
-                    if !path.pop() {
-                        break None;
-                    }
-                };
-
-                if venv.is_none() {
-                    let uv = uv::UV::new()?;
-                    uv.create_venv(PythonVersion::from_str("3.12.6")?).await?;
-                }
-
-                if let Some(pkg) = package {
-                    if editable {
-                        let uv = uv::UV::new()?;
-                        uv.pip_install(&["-e".to_string(), pkg]).await?;
-                    } else {
-                        let uv = uv::UV::new()?;
-                        uv.pip_install(&[pkg]).await?;
-                    }
-                } else if let Some(req_file) = requirement {
-                    let uv = uv::UV::new()?;
-                    uv.pip_install(&["-r".to_string(), req_file]).await?;
-                } else {
-                    eyre::bail!("No package or requirement file specified");
-                }
-            }
             Commands::Dir => {
                 let bin = get_python_bin().await?;
                 println!("{}", bin.display());
@@ -135,7 +87,7 @@ async fn main() -> Result<()> {
             eyre::bail!("Python command failed");
         }
     } else {
-        Cli::parse_from(&["epython", "--help"]);
+        Cli::parse_from(&["cspython", "--help"]);
     }
 
     Ok(())

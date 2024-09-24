@@ -4,7 +4,7 @@ members = [
     "libraries/uv",
     "libraries/script",
     "binaries/zython",
-    "binaries/epython",
+    "binaries/epython", "binaries/cspython",
 ]
 resolver = "2"
 

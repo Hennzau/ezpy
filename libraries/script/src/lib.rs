@@ -1,6 +1,3 @@
-use std::process::Stdio;
-use tokio::io::AsyncWriteExt;
-
 async fn fetch_script_curl(url: &str) -> eyre::Result<String> {
     let curl_output = tokio::process::Command::new("curl")
         .arg("-LsSf")
