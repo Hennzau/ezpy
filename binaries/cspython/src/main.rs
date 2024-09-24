@@ -11,7 +11,7 @@ use uv::python::PythonVersion;
     about = "Python 3.12.6 mirror espcecially for CS students"
 )]
 struct Cli {
-    #[arg()]
+    #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
     python_args: Vec<String>,
 
     #[command(subcommand)]
