@@ -1,6 +1,10 @@
 # `zz`
 
+ZZ is a tool to download/install and pin different python versions.
+
 # `zython`
+
+Zython is a a python mirror of the ZZ's pinned python version.
 
 # `epython`
 
