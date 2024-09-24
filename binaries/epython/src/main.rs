@@ -8,7 +8,7 @@ use uv::python::PythonVersion;
 #[command(
     author = "Enzo Le Van <dev@enzo-le-van.fr>",
     version = env!("CARGO_PKG_VERSION"),
-    about = "Python 3.12.6 easy manager"
+    about = "Python 3.12.6 easy mirror"
 )]
 struct Cli {
     #[arg()]
