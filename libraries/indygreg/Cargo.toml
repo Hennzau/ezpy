@@ -1,12 +1,10 @@
 [package]
-name = "script"
+name = "indygreg"
 version.workspace = true
+description.workspace = true
 edition.workspace = true
 documentation.workspace = true
-description.workspace = true
 license.workspace = true
 repository.workspace = true
 
 [dependencies]
-eyre = { workspace = true }
-tokio = { workspace = true }

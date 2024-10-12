@@ -1,12 +1,5 @@
 [workspace]
-members = [
-    "binaries/zz",
-    "libraries/uv",
-    "libraries/script",
-    "binaries/zython",
-    "binaries/epython",
-    "binaries/cspython",
-]
+members = ["binaries/ezpy", "libraries/indygreg"]
 resolver = "2"
 
 [workspace.package]
@@ -15,38 +8,11 @@ description = ""
 edition = "2021"
 documentation = ""
 license = "Apache-2.0"
-repository = "https://github.com/Hennzau/zz"
+repository = "https://github.com/Hennzau/ezpy"
 
 [workspace.dependencies]
-uv = { path = "libraries/uv" }
-script = { path = "libraries/script" }
+indygreg = { path = "libraries/indygreg" }
 
 eyre = "0.6.12"
-color-eyre = "0.6.3"
 tokio = { version = "1.40.0", features = ["full"] }
 clap = { version = "4.5.13", features = ["derive"] }
-
-# Config for 'cargo dist'
-[workspace.metadata.dist]
-# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.22.1"
-# CI backends to support
-ci = "github"
-# The installers to generate for each app
-installers = ["shell", "powershell"]
-# Target platforms to build apps for (Rust target-triple syntax)
-targets = [
-    "aarch64-apple-darwin",
-    "x86_64-apple-darwin",
-    "x86_64-unknown-linux-gnu",
-    "x86_64-pc-windows-msvc",
-]
-# Path that installers should place binaries in
-install-path = "CARGO_HOME"
-# Whether to install an updater program
-install-updater = false
-
-# The profile that 'cargo dist' will build with
-[profile.dist]
-inherits = "release"
-lto = "thin"

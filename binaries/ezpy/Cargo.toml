@@ -1,14 +1,13 @@
 [package]
-name = "uv"
+name = "ezpy"
 version.workspace = true
+description.workspace = true
 edition.workspace = true
 documentation.workspace = true
-description.workspace = true
 license.workspace = true
 repository.workspace = true
 
 [dependencies]
-simple-home-dir = "0.4.2"
 eyre = { workspace = true }
 tokio = { workspace = true }
-script = { workspace = true }
+clap = { workspace = true }
