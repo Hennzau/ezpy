@@ -1,5 +1,5 @@
 [workspace]
-members = ["binaries/ezpy", "libraries/indygreg"]
+members = ["binaries/ezpy", "binaries/tz", "libraries/indygreg"]
 resolver = "2"
 
 [workspace.package]

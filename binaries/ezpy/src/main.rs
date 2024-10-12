@@ -5,7 +5,7 @@ use eyre::Result;
 #[command(
     name = "ezpy",
     version = env!("CARGO_PKG_VERSION"),
-    about = "Python Management made ez"
+    about = "Python Management made easy",
 )]
 struct EzpyCLI {
     #[command(subcommand)]
