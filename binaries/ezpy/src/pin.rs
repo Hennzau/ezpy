@@ -1,6 +1,4 @@
-use std::path::PathBuf;
 
-use eyre::OptionExt;
 use indygreg::{install::install_home, metadata::VersionString};
 
 pub async fn pin_version(version: VersionString) -> eyre::Result<()> {
