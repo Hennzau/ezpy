@@ -11,3 +11,4 @@ repository.workspace = true
 eyre = { workspace = true }
 tokio = { workspace = true }
 clap = { workspace = true }
+indygreg = { workspace = true }

@@ -10,13 +10,17 @@ use tokio::io::AsyncWriteExt;
 pub fn install_home() -> eyre::Result<PathBuf> {
     if cfg!(windows) {
         Ok(simple_home_dir::home_dir()
-            .ok_or_eyre(eyre::eyre!("Failed to get home directory"))?
+            .ok_or_eyre(eyre::eyre!(
+                "Failed to get home directory, your home directory is not set"
+            ))?
             .join("indygreg")
             .join("data")
             .join("python"))
     } else {
         Ok(simple_home_dir::home_dir()
-            .ok_or_eyre(eyre::eyre!("Failed to get home directory"))?
+            .ok_or_eyre(eyre::eyre!(
+                "Failed to get home directory, your home directory is not set"
+            ))?
             .join(".local")
             .join("share")
             .join("indygreg")
@@ -53,7 +57,10 @@ async fn download_as_tar_gz(url: &str, destination: &Path) -> eyre::Result<()> {
     let mut response = client.get(url).send().await?;
 
     if !response.status().is_success() {
-        return Err(eyre::eyre!("Error downloading: {}", response.status()));
+        return Err(eyre::eyre!(
+            "Error downloading: {}, check your internet connection",
+            response.status()
+        ));
     }
 
     let path = Path::new(destination);

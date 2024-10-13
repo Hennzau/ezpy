@@ -43,7 +43,10 @@ impl Package {
 
         packages
             .get(&key)
-            .ok_or_eyre(eyre::eyre!("Package not found"))
+            .ok_or_eyre(eyre::eyre!(format!(
+                "Package not found. It may not be available for this platform: {}\n, Available packages: {:?}",
+                key, packages.keys()
+            )))
             .cloned()
     }
 
@@ -59,7 +62,10 @@ impl Package {
 
         packages
             .get(&key)
-            .ok_or_eyre(eyre::eyre!("Package not found"))
+            .ok_or_eyre(eyre::eyre!(format!(
+                "Package not found. It may not be available for this platform: {}\n, Available packages: {:?}",
+                key, packages.keys()
+            )))
             .cloned()
     }
 }
@@ -132,6 +138,8 @@ fn system_info() -> eyre::Result<(String, String, String)> {
             "armv7".to_string(),
             "gnueabi".to_string(),
         )),
-        _ => Err(eyre::eyre!("Unsupported platform")),
+        _ => Err(eyre::eyre!(
+            "Unsupported platform. You may need to build Python from source."
+        )),
     }
 }

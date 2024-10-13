@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 use eyre::Result;
+use indygreg::metadata::VersionString;
 
 #[derive(Parser)]
 #[command(
@@ -31,12 +32,12 @@ struct EnvArgs {
     #[command(subcommand)]
     command: Option<EnvCommand>,
     #[arg(required = false)]
-    version: Option<String>,
+    version: Option<VersionString>,
 }
 
 #[derive(Parser)]
 struct PinArgs {
-    version: String,
+    version: VersionString,
 }
 
 #[derive(Subcommand)]
@@ -84,7 +85,7 @@ async fn handle_install(args: InstallArgs) -> Result<()> {
         if args.packages[0] == "python" {
             if args.packages.len() > 1 {
                 let version = &args.packages[1];
-                install_python_version(version).await?;
+                install_python_version(version.to_string()).await?;
             } else {
                 return Err(eyre::eyre!("Please specify a Python version to install."));
             }
@@ -107,7 +108,7 @@ async fn handle_env(env_args: EnvArgs) -> Result<()> {
     Ok(())
 }
 
-async fn create_local_env(version: Option<String>) -> Result<()> {
+async fn create_local_env(version: Option<VersionString>) -> Result<()> {
     println!("Create a local environment in the current directory");
     if let Some(version) = version {
         println!("Optional version provided: {}", version);
@@ -134,8 +135,14 @@ async fn handle_pin(args: PinArgs) -> Result<()> {
     Ok(())
 }
 
-async fn install_python_version(version: &str) -> Result<()> {
-    println!("Installing Python version {}", version);
+async fn install_python_version(version: VersionString) -> Result<()> {
+    let packages = indygreg::metadata::download_packages().await?;
+    let package = indygreg::package::Package::from_string(version.to_string(), packages)?;
+
+    indygreg::install::download_install(package).await?;
+
+    println!("Python {} installed successfully", version);
+
     Ok(())
 }
 
