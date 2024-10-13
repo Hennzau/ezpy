@@ -1,12 +1,47 @@
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
-use eyre::Result;
+use eyre::{OptionExt, Result};
 use indygreg::metadata::VersionString;
+
+pub mod install;
+pub mod pin;
+pub mod venv;
+
+pub mod tui;
+
+pub fn install_home() -> eyre::Result<PathBuf> {
+    if cfg!(windows) {
+        Ok(simple_home_dir::home_dir()
+            .ok_or_eyre(eyre::eyre!(
+                "Failed to get home directory, your home directory is not set"
+            ))?
+            .join("ezpy")
+            .join("data"))
+    } else {
+        Ok(simple_home_dir::home_dir()
+            .ok_or_eyre(eyre::eyre!(
+                "Failed to get home directory, your home directory is not set"
+            ))?
+            .join(".local")
+            .join("share")
+            .join("ezpy"))
+    }
+}
+
+pub fn bin_path() -> PathBuf {
+    if cfg!(windows) {
+        PathBuf::from("python.exe")
+    } else {
+        PathBuf::from("bin").join("python")
+    }
+}
 
 #[derive(Parser)]
 #[command(
-    name = "ezpy",
+    name = env!("CARGO_PKG_NAME"),
     version = env!("CARGO_PKG_VERSION"),
-    about = "Python Management made easy",
+    about = env!("CARGO_PKG_DESCRIPTION"),
 )]
 struct EzpyCLI {
     #[command(subcommand)]
@@ -15,15 +50,26 @@ struct EzpyCLI {
 
 #[derive(Subcommand)]
 enum EzpyCommands {
+    #[command(
+        about = "Install a Python packages for the current environment. Or install a specific version of Python."
+    )]
     Install(InstallArgs),
+
+    #[command(about = "Manage Python environments (create, activate, deactivate, list, etc.)")]
     Env(EnvArgs),
+
+    #[command(
+        about = "Pin a Python binary to a specific version so it's used in all following commands."
+    )]
     Pin(PinArgs),
 }
 
 #[derive(Parser)]
 struct InstallArgs {
-    #[arg(short = 'r', long = "requirements", value_name = "FILE")]
+    #[arg(short = 'r', value_name = "FILE")]
     requirements: Option<String>,
+
+    #[arg(value_name = "PACKAGES OR `python <VERSION>'")]
     packages: Vec<String>,
 }
 
@@ -37,6 +83,7 @@ struct EnvArgs {
 
 #[derive(Parser)]
 struct PinArgs {
+    #[arg(value_name = "VERSION")]
     version: VersionString,
 }
 
@@ -48,11 +95,13 @@ enum EnvCommand {
 
 #[derive(Parser)]
 struct GlobalArgs {
+    #[arg(value_name = "NAME")]
     global: String,
 }
 
 #[derive(Parser)]
 struct ActivateArgs {
+    #[arg(value_name = "NAME")]
     name: Option<String>,
 }
 
@@ -87,7 +136,9 @@ async fn handle_install(args: InstallArgs) -> Result<()> {
                 let version = &args.packages[1];
                 install_python_version(version.to_string()).await?;
             } else {
-                return Err(eyre::eyre!("Please specify a Python version to install."));
+                return Err(eyre::eyre!(
+                    "A value is required for 'python <VERSION>' but none was supplied"
+                ));
             }
         } else {
             install_packages(args).await?;
@@ -101,24 +152,20 @@ async fn handle_env(env_args: EnvArgs) -> Result<()> {
         create_local_env(env_args.version).await?;
     } else {
         match env_args.command.unwrap() {
-            EnvCommand::Global(args) => create_global_env(args).await?,
+            EnvCommand::Global(args) => create_global_env(env_args.version, args).await?,
             EnvCommand::Activate(args) => activate_env(args).await?,
         }
     }
+
     Ok(())
 }
 
 async fn create_local_env(version: Option<VersionString>) -> Result<()> {
-    println!("Create a local environment in the current directory");
-    if let Some(version) = version {
-        println!("Optional version provided: {}", version);
-    }
-    Ok(())
+    venv::create_local_env(version).await
 }
 
-async fn create_global_env(args: GlobalArgs) -> Result<()> {
-    println!("Creating a global environment named {}", args.global);
-    Ok(())
+async fn create_global_env(version: Option<VersionString>, args: GlobalArgs) -> Result<()> {
+    venv::create_global_env(version, args.global).await
 }
 
 async fn activate_env(args: ActivateArgs) -> Result<()> {
@@ -127,17 +174,19 @@ async fn activate_env(args: ActivateArgs) -> Result<()> {
     } else {
         println!("Activate local environment if found");
     }
+
     Ok(())
 }
 
 async fn handle_pin(args: PinArgs) -> Result<()> {
-    println!("Pin version: {}", args.version);
-    Ok(())
+    pin::pin_version(args.version).await
 }
 
 async fn install_python_version(version: VersionString) -> Result<()> {
     let packages = indygreg::metadata::download_packages().await?;
     let package = indygreg::package::Package::from_string(version.to_string(), packages)?;
+
+    println!("Package found, installing Python {}...", version);
 
     indygreg::install::download_install(package).await?;
 
@@ -148,10 +197,12 @@ async fn install_python_version(version: VersionString) -> Result<()> {
 
 async fn install_packages(args: InstallArgs) -> Result<()> {
     println!("Installing packages: {:?}", args.packages);
+
     Ok(())
 }
 
 async fn install_from_requirements(requirements_file: &str) -> Result<()> {
     println!("Installing packages from {}", requirements_file);
+
     Ok(())
 }

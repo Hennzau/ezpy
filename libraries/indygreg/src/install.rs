@@ -33,14 +33,12 @@ pub async fn download_install(package: Package) -> eyre::Result<()> {
     let destination = install_home()?.join("python.tar.gz");
     let unpacked = install_home()?.join("python");
     let final_destination = install_home()?.join(format!(
-        "python-{}-{}.{}",
+        "python-{}.{}.{}",
         package.major, package.minor, package.patch
     ));
 
     download_as_tar_gz(&url, &destination).await?;
     unpack_tar_gz(&destination, &unpacked).await?;
-
-    // Move content from unpacked/python to final_destination
 
     let source = unpacked.join("python");
     tokio::fs::remove_dir_all(&final_destination).await.ok();

@@ -20,12 +20,12 @@ async fn download_metadata() -> eyre::Result<Value> {
         let body = response.text().await?;
         let json: Value = serde_json::from_str(&body)?;
 
-        return Ok(json);
+        Ok(json)
     } else {
-        return Err(eyre::eyre!(
+        Err(eyre::eyre!(
             "Failed to download metadata: {}, check your internet connection",
             response.status()
-        ));
+        ))
     }
 }
 

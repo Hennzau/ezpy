@@ -12,3 +12,4 @@ eyre = { workspace = true }
 tokio = { workspace = true }
 clap = { workspace = true }
 indygreg = { workspace = true }
+simple-home-dir = "0.4.3"
