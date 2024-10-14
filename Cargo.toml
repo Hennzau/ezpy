@@ -3,7 +3,7 @@ members = ["binaries/ezpy", "libraries/indygreg"]
 resolver = "2"
 
 [workspace.package]
-version = "0.3.5"
+version = "0.3.6"
 description = ""
 edition = "2021"
 documentation = ""
@@ -30,7 +30,6 @@ targets = [
     "aarch64-apple-darwin",
     "x86_64-apple-darwin",
     "x86_64-unknown-linux-gnu",
-    "x86_64-unknown-linux-musl",
     "x86_64-pc-windows-msvc",
 ]
 # Path that installers should place binaries in
