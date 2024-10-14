@@ -7,7 +7,7 @@ use reqwest::Client;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 
-pub fn install_home() -> eyre::Result<PathBuf> {
+pub fn install_home_indygreg() -> eyre::Result<PathBuf> {
     if cfg!(windows) {
         Ok(simple_home_dir::home_dir()
             .ok_or_eyre(eyre::eyre!(
@@ -30,9 +30,9 @@ pub fn install_home() -> eyre::Result<PathBuf> {
 
 pub async fn download_install(package: Package) -> eyre::Result<()> {
     let url = package.url;
-    let destination = install_home()?.join("python.tar.gz");
-    let unpacked = install_home()?.join("python");
-    let final_destination = install_home()?.join(format!(
+    let destination = install_home_indygreg()?.join("python.tar.gz");
+    let unpacked = install_home_indygreg()?.join("python");
+    let final_destination = install_home_indygreg()?.join(format!(
         "python-{}.{}.{}",
         package.major, package.minor, package.patch
     ));

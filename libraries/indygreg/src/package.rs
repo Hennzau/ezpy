@@ -44,8 +44,8 @@ impl Package {
         packages
             .get(&key)
             .ok_or_eyre(eyre::eyre!(format!(
-                "Package not found. It may not be available for this platform: {}\n, Available packages: {:?}",
-                key, packages.keys()
+                "Package not found. It may not be available for this platform: {}\n, Check available packages by running `ezpy list`",
+                key
             )))
             .cloned()
     }
@@ -63,11 +63,25 @@ impl Package {
         packages
             .get(&key)
             .ok_or_eyre(eyre::eyre!(format!(
-                "Package not found. It may not be available for this platform: {}\n, Available packages: {:?}",
-                key, packages.keys()
+                "Package not found. It may not be available for this platform: {}\n, Check available packages by running `ezpy list`",
+                key
             )))
             .cloned()
     }
+}
+
+pub async fn available_packages() -> eyre::Result<PackageList> {
+    let info = system_info()?;
+
+    let packages = crate::metadata::download_packages().await?;
+    let platform = format!("{}-{}-{}", info.0, info.1, info.2);
+
+    let packages = packages
+        .into_iter()
+        .filter(|(key, _)| key.starts_with("cpython") && key.contains(&platform))
+        .collect();
+
+    Ok(packages)
 }
 
 fn system_info() -> eyre::Result<(String, String, String)> {

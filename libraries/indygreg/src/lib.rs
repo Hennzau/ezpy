@@ -7,7 +7,7 @@ pub mod metadata;
 pub mod package;
 
 pub fn python_path(version: VersionString) -> eyre::Result<PathBuf> {
-    Ok(install::install_home()?.join(format!("python-{}", version)))
+    Ok(install::install_home_indygreg()?.join(format!("python-{}", version)))
 }
 
 pub fn ensure_python_version(version: VersionString) -> eyre::Result<()> {
