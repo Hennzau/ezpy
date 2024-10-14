@@ -1,7 +1,11 @@
 use crate::venv::get_nearest_env;
 
-pub async fn install_packages(packages: Vec<String>) -> eyre::Result<()> {
-    let venv = get_nearest_env().await?;
+pub async fn install_packages(packages: Vec<String>, global: Option<String>) -> eyre::Result<()> {
+    let venv = match global {
+        Some(global) => crate::venv::get_global_env(global)?,
+        None => get_nearest_env().await?,
+    };
+
     let bin = venv.join(crate::env_bin_path());
 
     let mut cmd = tokio::process::Command::new(bin);
@@ -22,8 +26,15 @@ pub async fn install_packages(packages: Vec<String>) -> eyre::Result<()> {
     Ok(())
 }
 
-pub async fn install_from_requirements(requirements_file: &str) -> eyre::Result<()> {
-    let venv = get_nearest_env().await?;
+pub async fn install_from_requirements(
+    requirements_file: &str,
+    global: Option<String>,
+) -> eyre::Result<()> {
+    let venv = match global {
+        Some(global) => crate::venv::get_global_env(global)?,
+        None => get_nearest_env().await?,
+    };
+
     let bin = venv.join(crate::env_bin_path());
 
     let mut cmd = tokio::process::Command::new(bin);

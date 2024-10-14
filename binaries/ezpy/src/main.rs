@@ -82,6 +82,9 @@ struct InstallArgs {
 
     #[arg(value_name = "PACKAGES OR `python <VERSION>'")]
     packages: Vec<String>,
+
+    #[arg(value_name = "NAME", long = "global")]
+    global: Option<String>,
 }
 
 #[derive(Parser)]
@@ -106,12 +109,15 @@ enum EnvCommand {
     Global(GlobalArgs),
 
     #[command(
-        about = "Activate a virtual environment. If no name is provided, it activates the current environment."
+        about = "Get the activate command to run in your shell. It's useful for one-off environments."
     )]
     Activate(ActivateArgs),
 
-    #[command(about = "Deactivate the current virtual environment.")]
+    #[command(about = "Get the deactivate command to run in your shell.")]
     Deactivate,
+
+    #[command(about = "Show the path to the current virtual environment.")]
+    Path(ActivateArgs),
 
     #[command(about = "Delete a global virtual environment.")]
     Delete(GlobalArgs),
@@ -157,7 +163,7 @@ async fn handle_no_command() -> Result<()> {
 
 async fn handle_install(args: InstallArgs) -> Result<()> {
     if let Some(requirements_file) = args.requirements {
-        install_from_requirements(&requirements_file).await?;
+        install_from_requirements(&requirements_file, args.global).await?;
     } else if !args.packages.is_empty() {
         if args.packages[0] == "python" {
             if args.packages.len() > 1 {
@@ -185,6 +191,7 @@ async fn handle_env(env_args: EnvArgs) -> Result<()> {
             EnvCommand::Deactivate => deactivate_env().await?,
             EnvCommand::Delete(args) => delete_env(args).await?,
             EnvCommand::List => list_envs().await?,
+            EnvCommand::Path(args) => show_env_path(args).await?,
         }
     }
 
@@ -210,19 +217,15 @@ async fn create_global_env(version: Option<VersionString>, args: GlobalArgs) -> 
 }
 
 async fn activate_env(args: ActivateArgs) -> Result<()> {
-    if let Some(env_name) = args.name {
-        println!("Activate global environment named {}", env_name);
-    } else {
-        println!("Activate local environment if found");
-    }
-
-    Ok(())
+    venv::activate_env(args.name).await
 }
 
 async fn deactivate_env() -> Result<()> {
-    println!("Deactivate current environment");
+    venv::deactivate_env().await
+}
 
-    Ok(())
+async fn show_env_path(args: ActivateArgs) -> Result<()> {
+    venv::show_env_path(args.name).await
 }
 
 async fn delete_env(args: GlobalArgs) -> Result<()> {
@@ -251,9 +254,9 @@ async fn install_python_version(version: VersionString) -> Result<()> {
 }
 
 async fn install_packages(args: InstallArgs) -> Result<()> {
-    install::install_packages(args.packages).await
+    install::install_packages(args.packages, args.global).await
 }
 
-async fn install_from_requirements(requirements_file: &str) -> Result<()> {
-    install::install_from_requirements(requirements_file).await
+async fn install_from_requirements(requirements_file: &str, global: Option<String>) -> Result<()> {
+    install::install_from_requirements(requirements_file, global).await
 }

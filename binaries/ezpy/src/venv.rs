@@ -122,6 +122,63 @@ pub async fn list_global_envs() -> eyre::Result<()> {
     Ok(())
 }
 
+pub async fn activate_env(global: Option<String>) -> eyre::Result<()> {
+    let env = match global {
+        Some(name) => get_global_env(name)?,
+        None => get_nearest_env().await?,
+    };
+
+    let bin = env.join(crate::python_bin_path());
+    if !bin.exists() {
+        eyre::bail!(
+            "Python executable not found in virtual environment, expected at {}",
+            bin.display()
+        );
+    }
+
+    println!("To activate this environment, run:");
+    if cfg!(windows) {
+        println!("On Windows CMD:");
+        println!("{}", bin.parent().unwrap().join("activate.bat").display());
+        println!("On Windows Git Bash or Powershell:");
+        println!(". {}", bin.parent().unwrap().join("activate").display());
+    } else {
+        println!(". {}", bin.parent().unwrap().join("activate").display());
+    }
+
+    Ok(())
+}
+
+pub async fn deactivate_env() -> eyre::Result<()> {
+    println!("To deactivate this environment, run:");
+    println!("deactivate");
+
+    Ok(())
+}
+
+pub async fn show_env_path(global: Option<String>) -> eyre::Result<()> {
+    let env = match global {
+        Some(name) => get_global_env(name)?,
+        None => get_nearest_env().await?,
+    };
+
+    println!("{}", env.display());
+
+    Ok(())
+}
+
+pub fn get_global_env(name: String) -> eyre::Result<std::path::PathBuf> {
+    let dir = install_home_ezpy()?.join("env").join(&name);
+    if !dir.exists() {
+        return Err(eyre::eyre!(
+            "Virtual environment does not exist at {}",
+            dir.display()
+        ));
+    }
+
+    Ok(dir)
+}
+
 pub async fn get_nearest_env() -> eyre::Result<std::path::PathBuf> {
     let mut current = std::env::current_dir()?;
 

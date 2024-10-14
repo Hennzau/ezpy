@@ -3,7 +3,7 @@ members = ["binaries/ezpy", "libraries/indygreg"]
 resolver = "2"
 
 [workspace.package]
-version = "0.3.6"
+version = "0.4.0"
 description = ""
 edition = "2021"
 documentation = ""
